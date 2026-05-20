@@ -1,8 +1,6 @@
 const { createAudioPlayer, createAudioResource, joinVoiceChannel, AudioPlayerStatus, NoSubscriberBehavior, VoiceConnectionStatus, entersState, StreamType } = require('@discordjs/voice');
-const play = require('play-dl');
-const { spawn } = require('child_process');
+const { spawn, execFile } = require('child_process');
 const path = require('path');
-
 const fs = require('fs');
 const os = require('os');
 
@@ -31,6 +29,41 @@ function getQueue(guildId) {
     });
   }
   return queues.get(guildId);
+}
+
+// Buscar en YouTube usando yt-dlp
+function searchYouTube(query) {
+  return new Promise((resolve, reject) => {
+    const args = [
+      `ytsearch1:${query}`,
+      '--dump-json',
+      '--no-warnings',
+      '--no-check-certificates',
+      '--no-playlist',
+      '--js-runtimes', `node:${getNodePath()}`,
+    ];
+
+    if (fs.existsSync(cookiesPath)) {
+      args.push('--cookies', cookiesPath);
+    }
+
+    execFile(ytdlpPath, args, { timeout: 30000 }, (error, stdout) => {
+      if (error || !stdout) {
+        return reject(error || new Error('Sin resultados'));
+      }
+      try {
+        const data = JSON.parse(stdout);
+        resolve({
+          title: data.title || 'Desconocido',
+          url: data.webpage_url || data.url,
+          author: data.channel || data.uploader || 'Desconocido',
+          duration: data.duration_string || '0:00',
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
 }
 
 function getAudioStream(url) {
@@ -146,19 +179,11 @@ async function addTrack(guildId, voiceChannel, textChannel, query) {
   const queue = getQueue(guildId);
   queue.channel = textChannel;
 
-  const results = await play.search(query, { limit: 1, source: { youtube: 'video' } });
+  const track = await searchYouTube(query);
 
-  if (!results || results.length === 0) {
+  if (!track) {
     return null;
   }
-
-  const video = results[0];
-  const track = {
-    title: video.title,
-    url: video.url,
-    author: video.channel?.name || 'Desconocido',
-    duration: video.durationRaw,
-  };
 
   queue.tracks.push(track);
 
@@ -188,4 +213,4 @@ async function addTracks(guildId, voiceChannel, textChannel, tracks) {
   }
 }
 
-module.exports = { getQueue, queues, addTrack, addTracks, playSong };
+module.exports = { getQueue, queues, addTrack, addTracks, playSong, searchYouTube };

@@ -1,4 +1,3 @@
-const play = require('play-dl');
 const ytpl = require('@distube/ytpl');
 const { addTracks } = require('../musicQueue');
 

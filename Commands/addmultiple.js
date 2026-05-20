@@ -1,5 +1,4 @@
-const play = require('play-dl');
-const { addTracks } = require('../musicQueue');
+const { addTracks, searchYouTube } = require('../musicQueue');
 
 module.exports = {
   name: 'addmultiple',
@@ -29,15 +28,9 @@ module.exports = {
 
       for (const cancionNombre of canciones) {
         try {
-          const results = await play.search(cancionNombre, { limit: 1, source: { youtube: 'video' } });
-
-          if (results && results.length > 0) {
-            tracks.push({
-              title: results[0].title,
-              url: results[0].url,
-              author: results[0].channel?.name || 'Desconocido',
-              duration: results[0].durationRaw,
-            });
+          const track = await searchYouTube(cancionNombre);
+          if (track) {
+            tracks.push(track);
             agregadas++;
           } else {
             errores.push(cancionNombre);
