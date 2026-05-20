@@ -1,12 +1,12 @@
 const { createAudioPlayer, createAudioResource, joinVoiceChannel, AudioPlayerStatus, NoSubscriberBehavior, VoiceConnectionStatus, entersState, StreamType } = require('@discordjs/voice');
 const play = require('play-dl');
-const ytdlp = require('yt-dlp-exec');
 const { spawn } = require('child_process');
 const path = require('path');
 
 const queues = new Map();
 
-const ytdlpPath = path.join(__dirname, 'node_modules', 'yt-dlp-exec', 'bin', 'yt-dlp');
+const ytdlpPath = path.join(__dirname, 'node_modules', 'yt-dlp-exec', 'bin', 'yt-dlp.exe');
+const cookiesPath = path.join(__dirname, 'cookies.txt');
 
 function getQueue(guildId) {
   if (!queues.has(guildId)) {
@@ -21,16 +21,37 @@ function getQueue(guildId) {
   return queues.get(guildId);
 }
 
-async function getAudioStream(url) {
-  const process = spawn(ytdlpPath, [
+function getAudioStream(url) {
+  const ffmpegPath = require('ffmpeg-static');
+
+  const ytProcess = spawn(ytdlpPath, [
     '-f', 'bestaudio',
     '-o', '-',
     '--no-warnings',
     '--no-check-certificates',
+    '--no-playlist',
+    '--js-runtimes', 'node:C:\\Program Files\\nodejs\\node.exe',
+    '--cookies', cookiesPath,
     url,
   ]);
 
-  return process.stdout;
+  const ffmpeg = spawn(ffmpegPath, [
+    '-i', 'pipe:0',
+    '-f', 's16le',
+    '-ar', '48000',
+    '-ac', '2',
+    'pipe:1',
+  ]);
+
+  ytProcess.stdout.pipe(ffmpeg.stdin);
+
+  ytProcess.stderr.on('data', () => {});
+  ffmpeg.stderr.on('data', () => {});
+
+  ytProcess.on('error', (err) => console.error('yt-dlp error:', err.message));
+  ffmpeg.on('error', (err) => console.error('ffmpeg error:', err.message));
+
+  return ffmpeg.stdout;
 }
 
 async function playSong(guildId) {
@@ -50,8 +71,8 @@ async function playSong(guildId) {
   queue.current = track;
 
   try {
-    const stream = await getAudioStream(track.url);
-    const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
+    const stream = getAudioStream(track.url);
+    const resource = createAudioResource(stream, { inputType: StreamType.Raw });
 
     queue.player.play(resource);
   } catch (error) {
