@@ -1,0 +1,11 @@
+services:
+  - type: worker
+    name: discord-music-bot
+    runtime: node
+    buildCommand: npm install && pip install yt-dlp
+    startCommand: node index.js
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
