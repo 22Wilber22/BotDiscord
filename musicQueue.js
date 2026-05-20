@@ -3,10 +3,22 @@ const play = require('play-dl');
 const { spawn } = require('child_process');
 const path = require('path');
 
+const fs = require('fs');
+const os = require('os');
+
 const queues = new Map();
 
-const ytdlpPath = path.join(__dirname, 'node_modules', 'yt-dlp-exec', 'bin', 'yt-dlp.exe');
+// Detectar si estamos en Windows o Linux (Replit)
+const isWindows = os.platform() === 'win32';
+const ytdlpPath = isWindows
+  ? path.join(__dirname, 'node_modules', 'yt-dlp-exec', 'bin', 'yt-dlp.exe')
+  : 'yt-dlp';
 const cookiesPath = path.join(__dirname, 'cookies.txt');
+
+// Encontrar Node.js automáticamente
+function getNodePath() {
+  return process.execPath; // Funciona en Windows y Linux
+}
 
 function getQueue(guildId) {
   if (!queues.has(guildId)) {
@@ -24,16 +36,23 @@ function getQueue(guildId) {
 function getAudioStream(url) {
   const ffmpegPath = require('ffmpeg-static');
 
-  const ytProcess = spawn(ytdlpPath, [
+  const ytArgs = [
     '-f', 'bestaudio',
     '-o', '-',
     '--no-warnings',
     '--no-check-certificates',
     '--no-playlist',
-    '--js-runtimes', 'node:C:\\Program Files\\nodejs\\node.exe',
-    '--cookies', cookiesPath,
-    url,
-  ]);
+    '--js-runtimes', `node:${getNodePath()}`,
+  ];
+
+  // Solo usar cookies si el archivo existe
+  if (fs.existsSync(cookiesPath)) {
+    ytArgs.push('--cookies', cookiesPath);
+  }
+
+  ytArgs.push(url);
+
+  const ytProcess = spawn(ytdlpPath, ytArgs);
 
   const ffmpeg = spawn(ffmpegPath, [
     '-i', 'pipe:0',
