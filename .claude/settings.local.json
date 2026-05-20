@@ -7,7 +7,10 @@
       "PowerShell(\\(Get-Command node\\).Source)",
       "Bash(node -e \"try { const o = require\\('opusscript'\\); console.log\\('opusscript loaded OK'\\); } catch\\(e\\) { console.log\\('opusscript failed:', e.message\\); }\")",
       "Bash(node index.js)",
-      "Bash(jobs -l)"
+      "Bash(jobs -l)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
