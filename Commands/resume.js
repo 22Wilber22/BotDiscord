@@ -1,21 +1,16 @@
-const { useMainPlayer } = require('discord-player');
+const { getQueue } = require('../musicQueue');
 
 module.exports = {
   name: 'resume',
   description: 'Reanuda la música pausada',
   execute: async (message) => {
-    const player = useMainPlayer();
-    const queue = player.nodes.get(message.guild);
+    const queue = getQueue(message.guild.id);
 
-    if (!queue) {
+    if (!queue.player) {
       return message.reply('❌ No hay música en la cola');
     }
 
-    if (queue.node.isPaused()) {
-      queue.node.setPaused(false);
-      message.reply('▶️ Música reanudada');
-    } else {
-      message.reply('❌ La música ya está reproduciéndose');
-    }
+    queue.player.unpause();
+    message.reply('▶️ Música reanudada');
   },
 };

@@ -1,6 +1,4 @@
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const { Player } = require('discord-player');
-const { YouTubeExtractor } = require('@discord-player/extractor');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -15,13 +13,6 @@ const client = new Client({
   ],
 });
 
-const player = new Player(client, {
-  ytdlOptions: {
-    quality: 'lowestaudio',
-    highWaterMark: 1 << 25,
-  },
-});
-
 // Cargar comandos automáticamente
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'Commands');
@@ -33,21 +24,9 @@ for (const file of commandFiles) {
   client.commands.set(command.name, command);
 }
 
-client.once('ready', async () => {
+client.once('ready', () => {
   console.log(`✅ Bot conectado como ${client.user.tag}`);
-  client.user.setActivity('!help para ver comandos', { type: 'LISTENING' });
-
-  // Cargar extractores
-  await player.extractors.register(YouTubeExtractor);
-  console.log('🎵 Extractor de YouTube cargado');
-});
-
-player.events.on('error', (queue, error) => {
-  console.error('Error en la cola:', error);
-});
-
-player.events.on('playerError', (queue, error) => {
-  console.error('Error del reproductor:', error);
+  console.log('🎵 Listo para reproducir música de YouTube');
 });
 
 client.on('messageCreate', async (message) => {

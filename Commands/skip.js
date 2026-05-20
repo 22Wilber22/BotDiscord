@@ -1,18 +1,17 @@
-const { useMainPlayer } = require('discord-player');
+const { getQueue, playSong } = require('../musicQueue');
 
 module.exports = {
   name: 'skip',
   description: 'Salta a la siguiente canción',
   execute: async (message) => {
-    const player = useMainPlayer();
-    const queue = player.nodes.get(message.guild);
+    const queue = getQueue(message.guild.id);
 
-    if (!queue || !queue.isPlaying()) {
+    if (!queue.current) {
       return message.reply('❌ No hay música reproduciéndose');
     }
 
-    const oldTrack = queue.currentTrack;
-    queue.node.skip();
+    const oldTrack = queue.current;
+    queue.player.stop();
     message.reply(`⏭️ Saltado: **${oldTrack.title}**`);
   },
 };

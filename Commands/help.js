@@ -38,6 +38,14 @@ module.exports = {
           name: '!autoplay',
           value: 'Activa/desactiva autoplay (canciones similares automáticas)',
         },
+        {
+          name: '!addmultiple <canciones>',
+          value: 'Agrega múltiples canciones. Uso: !addmultiple Canción 1, Canción 2',
+        },
+        {
+          name: '!songs <URL>',
+          value: 'Muestra las canciones de una playlist y te da el comando listo para copiar',
+        },
       ],
       footer: { text: 'Usa !help para ver este mensaje' },
     };

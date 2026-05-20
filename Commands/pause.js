@@ -1,17 +1,16 @@
-const { useMainPlayer } = require('discord-player');
+const { getQueue } = require('../musicQueue');
 
 module.exports = {
   name: 'pause',
   description: 'Pausa la música',
   execute: async (message) => {
-    const player = useMainPlayer();
-    const queue = player.nodes.get(message.guild);
+    const queue = getQueue(message.guild.id);
 
-    if (!queue || !queue.isPlaying()) {
+    if (!queue.player || !queue.current) {
       return message.reply('❌ No hay música reproduciéndose');
     }
 
-    queue.node.setPaused(true);
+    queue.player.pause();
     message.reply('⏸️ Música pausada');
   },
 };

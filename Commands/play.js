@@ -1,8 +1,8 @@
-const { useMainPlayer } = require('discord-player');
+const { addTrack } = require('../musicQueue');
 
 module.exports = {
   name: 'play',
-  description: 'Reproduce una canción',
+  description: 'Reproduce una canción de YouTube',
   execute: async (message, args) => {
     if (!message.member.voice.channel) {
       return message.reply('❌ Debes estar en un canal de voz');
@@ -12,28 +12,19 @@ module.exports = {
       return message.reply('❌ Necesitas decir el nombre de la canción');
     }
 
-    const player = useMainPlayer();
     const cancionNombre = args.join(' ');
 
     try {
-      const searchResult = await player.search(cancionNombre, {
-        requestedBy: message.author,
-      });
+      const track = await addTrack(
+        message.guild.id,
+        message.member.voice.channel,
+        message.channel,
+        cancionNombre
+      );
 
-      if (!searchResult || searchResult.tracks.length === 0) {
+      if (!track) {
         return message.reply(`❌ No encontré ninguna canción para: ${cancionNombre}`);
       }
-
-      const queue = player.nodes.create(message.guild, {
-        metadata: message.channel,
-      });
-
-      if (!queue.connection) await queue.connect(message.member.voice.channel);
-
-      const track = searchResult.tracks[0];
-      queue.addTrack(track);
-
-      if (!queue.isPlaying()) await queue.node.play();
 
       message.reply(`✅ Reproduciendo: **${track.title}** de **${track.author}**`);
     } catch (error) {
