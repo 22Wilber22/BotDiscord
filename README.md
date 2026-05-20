@@ -53,6 +53,8 @@ node index.js
 | `!skip` | Salta a la siguiente canción |
 | `!stop` | Detiene la música |
 | `!queue` | Muestra la cola de reproducción |
+| `!playlist <URL>` | Reproduce una playlist de YouTube |
+| `!autoplay` | Activa/desactiva autoplay automático |
 | `!help` | Muestra todos los comandos |
 
 ## 📝 Notas

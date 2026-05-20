@@ -30,6 +30,14 @@ module.exports = {
           name: '!queue',
           value: 'Muestra la cola de reproducción',
         },
+        {
+          name: '!playlist <URL>',
+          value: 'Reproduce una playlist de YouTube',
+        },
+        {
+          name: '!autoplay',
+          value: 'Activa/desactiva autoplay (canciones similares automáticas)',
+        },
       ],
       footer: { text: 'Usa !help para ver este mensaje' },
     };
